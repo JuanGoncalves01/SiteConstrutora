@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de EPIs</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de EPIs</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Condição</th>
+                <th>Situação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for epi in epis %}
+            <tr>
+                <td>{{ epi.nome }}</td>
+                <td>{{ epi.condicao }}</td>
+                <td>{{ epi.situacao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{% url 'home' %}">Voltar</a>
+</body>
+</html>

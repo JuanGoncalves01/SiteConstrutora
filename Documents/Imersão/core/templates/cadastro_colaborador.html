@@ -2,10 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastro de EPI</title>
+    <title>Cadastro de Colaborador</title>
 </head>
 <body>
-    <h1>Cadastro de EPI</h1>
+    <h1>Cadastro de Colaborador</h1>
     {% if messages %}
         <ul class="messages">
             {% for message in messages %}
@@ -18,16 +18,8 @@
         <label for="nome">Nome:</label>
         <input type="text" name="nome" id="nome" required>
         <br>
-        <label for="condicao">Condição:</label>
-        <input type="text" name="condicao" id="condicao" required>
-        <br>
-        <label for="situacao">Situação:</label>
-        <select name="situacao" id="situacao" required>
-            <option value="1">Disponível</option>
-            <option value="2">Em Uso</option>
-            <option value="3">Manutenção</option>
-            <option value="4">Baixado</option>
-        </select>
+        <label for="cpf">CPF:</label>
+        <input type="text" name="cpf" id="cpf" required>
         <br>
         <button type="submit">Cadastrar</button>
     </form>

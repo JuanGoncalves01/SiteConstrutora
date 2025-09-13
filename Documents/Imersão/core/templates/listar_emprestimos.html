@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Empréstimos Ativos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            text-transform: uppercase;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .acao {
+            text-align: center;
+            white-space: nowrap;
+        }
+        .btn-devolver {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-devolver:hover {
+            background-color: #c0392b;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Empréstimos Ativos</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <table>
+        <thead>
+            <tr>
+                <th>Colaborador</th>
+                <th>EPI</th>
+                <th>Data de Empréstimo</th>
+                <th>Data Prevista de Devolução</th>
+                <th class="acao">Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emprestimo in emprestimos %}
+            <tr>
+                <td>{{ emprestimo.colaborador.nome }}</td>
+                <td>
+                    {% for item in emprestimo.itens_emprestimo_set.all %}
+                        {{ item.equipamento.nome }}
+                    {% endfor %}
+                </td>
+                <td>{{ emprestimo.data|date:"d/m/Y" }}</td>
+                <td>{{ emprestimo.data_devolucao|date:"d/m/Y" }}</td>
+                <td class="acao">
+                    <a href="{% url 'devolver_emprestimo' emprestimo.id_emprestimo %}" class="btn-devolver">Devolver</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">Nenhum empréstimo ativo no momento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'home' %}" class="back-link">Voltar para o Dashboard</a>
+</body>
+</html>

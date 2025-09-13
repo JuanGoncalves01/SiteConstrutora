@@ -11,7 +11,8 @@ class Colaborador(models.Model):
 class Equipamento(models.Model):
     id_equipamento = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=90)
-    situacao = models.IntegerField()
+    # 1 para 'Disponível', 2 para 'Em Uso'
+    situacao = models.IntegerField(default=1) 
     condicao = models.CharField(max_length=45)
     
     def __str__(self):
@@ -28,8 +29,8 @@ class EPI(models.Model):
 
 class Emprestimo(models.Model):
     id_emprestimo = models.AutoField(primary_key=True)
-    data = models.DateTimeField()
-    data_devolucao = models.DateTimeField()
+    data = models.DateField()
+    data_devolucao = models.DateField()
     colaborador = models.ForeignKey(Colaborador, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -48,7 +49,6 @@ class Itens_Emprestimo(models.Model):
     emprestimo = models.ForeignKey(Emprestimo, on_delete=models.CASCADE)
     
     class Meta:
-        # Define uma chave primária composta para evitar duplicidade
         unique_together = (('equipamento', 'emprestimo'),)
         
     def __str__(self):
@@ -59,7 +59,6 @@ class Consumo_EPI(models.Model):
     epi = models.ForeignKey(EPI, on_delete=models.CASCADE)
     
     class Meta:
-        # Define uma chave primária composta
         unique_together = (('consumo', 'epi'),)
         
     def __str__(self):

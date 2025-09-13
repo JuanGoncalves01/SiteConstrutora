@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Empréstimo de EPI</title>
+</head>
+<body>
+    <h1>Registro de Empréstimo de EPI</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form action="{% url 'confirmar_emprestimo' %}" method="post">
+        {% csrf_token %}
+        <label for="colaborador">Colaborador:</label>
+        <select name="colaborador" id="colaborador" required>
+            {% for colaborador in colaboradores %}
+                <option value="{{ colaborador.id_colaborador }}" {% if colaborador_selecionado and colaborador_selecionado.id_colaborador == colaborador.id_colaborador %}selected{% endif %}>
+                    {{ colaborador.nome }} (CPF: {{ colaborador.cpf }})
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="epi">EPI:</label>
+        <select name="epi" id="epi" required>
+            {% for epi in epis %}
+                <option value="{{ epi.id_equipamento }}">{{ epi.nome }} ({{ epi.condicao }})</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="data_retirada">Data de Retirada:</label>
+        <input type="date" name="data_retirada" id="data_retirada" required>
+        <br>
+        <label for="data_devolucao">Data Prevista de Devolução:</label>
+        <input type="date" name="data_devolucao" id="data_devolucao" required>
+        <br>
+        <button type="submit">Confirmar Empréstimo</button>
+    </form>
+    <br>
+    <a href="{% url 'home' %}">Voltar</a>
+</body>
+</html>

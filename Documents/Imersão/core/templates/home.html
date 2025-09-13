@@ -4,93 +4,133 @@
     <meta charset="UTF-8">
     <title>Sistema de Gestão de EPIs</title>
     <style>
-        /* Estilos fornecidos */
-        html,body {
+        /* HTML e Body */
+        html, body {
             height: 100%;
-        }
-
-        body {
-            display: flex;
-            align-items: stretch;
-            justify-content: flex-end;
-            background-image: url('./images/ImagemLogin.jpeg');
-            background-size: cover;
             margin: 0;
         }
 
-        .box {
-            background-color: #9bcf3b;
+        /* Estrutura da Página */
+        body {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 100vh;
-            padding: 2rem;
-            box-sizing: border-box;
-            max-width: 350px;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
         }
 
-        .login {
-            display: flex;
-            flex-direction: column;
+        /* Sidebar - Menu Lateral */
+        .sidebar {
             width: 250px;
-            gap: 3rem;
-            text-align: center;
-        }  
-
-        .box h2 {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 30px;
-        }
-
-        .input{
-            padding: 10px;
-            border-color: #9bcf3b;
-            border-radius: 8px;
-        }
-
-        .buttons {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
             display: flex;
-            flex-direction: column; /* Altera para coluna para melhor empilhamento */
-            gap: 1rem;
-            margin-bottom: 1rem;
-            width: 100%; /* Ocupa a largura total para alinhar */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
         }
 
-        .button {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
+        .sidebar h2 {
+            margin-bottom: 30px;
             text-align: center;
-            text-decoration: none; /* Remove o sublinhado do link */
-            color: #000;
+        }
+        
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
         }
 
-        .primary-button {
-            background-color: #f7d04e;
-            border: 2px solid #f7d04e;
+        .sidebar li a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            transition: background-color 0.3s;
         }
 
-        .secondary-button {
+        .sidebar li a:hover {
+            background-color: #575757;
+        }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .dashboard-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
             background-color: #fff;
-            border: 2px solid #9bcf3b;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .card form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div class="login">
-            <h2>Bem-vindo</h2>
-            <p>Faça login ou cadastre-se para continuar</p>
-            <input type="text" placeholder="Usuário" class="input">
-            <input type="password" placeholder="Senha" class="input">
-            <div class="buttons">
-                <!-- Botão para entrar -->
-                <a href="#" class="button primary-button">Entrar</a>
-                <!-- Botão para cadastro -->
-                <a href="{% url 'cadastro_colaborador' %}" class="button secondary-button">Cadastrar Usuário</a>
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li><a href="{% url 'home' %}">Dashboard</a></li>
+            <li><a href="{% url 'cadastro_colaborador' %}">Cadastrar Colaborador</a></li>
+            <li><a href="{% url 'cadastro_epi' %}">Cadastrar EPI</a></li>
+            <li><a href="{% url 'listar_epis' %}">Listar EPIs</a></li>
+            <li><a href="{% url 'listar_emprestimos' %}">Empréstimos Ativos</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <h1>Dashboard</h1>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="dashboard-cards">
+            <div class="card">
+                <h3>Total de Colaboradores</h3>
+                <p>{{ colaboradores_count }}</p>
             </div>
+            <div class="card">
+                <h3>Total de EPIs</h3>
+                <p>{{ epis_count }}</p>
+            </div>
+            <div class="card">
+                <h3>Empréstimos Ativos</h3>
+                <p>{{ emprestimos_ativos_count }}</p>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 20px;">
+            <h3>Empréstimo Rápido</h3>
+            <p>Digite o CPF do colaborador para iniciar o empréstimo.</p>
+            <form method="post" action="{% url 'verificar_colaborador' %}">
+                {% csrf_token %}
+                <label for="cpf">CPF:</label>
+                <input type="text" name="cpf" id="cpf" placeholder="Digite o CPF" required>
+                <button type="submit">Verificar</button>
+            </form>
         </div>
     </div>
 </body>
