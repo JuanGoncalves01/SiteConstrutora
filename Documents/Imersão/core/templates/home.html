@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Gestão de EPIs</title>
+    <style>
+        /* Estilos fornecidos */
+        html,body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-end;
+            background-image: url('./images/ImagemLogin.jpeg');
+            background-size: cover;
+            margin: 0;
+        }
+
+        .box {
+            background-color: #9bcf3b;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            box-sizing: border-box;
+            max-width: 350px;
+        }
+
+        .login {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            gap: 3rem;
+            text-align: center;
+        }  
+
+        .box h2 {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 30px;
+        }
+
+        .input{
+            padding: 10px;
+            border-color: #9bcf3b;
+            border-radius: 8px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column; /* Altera para coluna para melhor empilhamento */
+            gap: 1rem;
+            margin-bottom: 1rem;
+            width: 100%; /* Ocupa a largura total para alinhar */
+        }
+
+        .button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none; /* Remove o sublinhado do link */
+            color: #000;
+        }
+
+        .primary-button {
+            background-color: #f7d04e;
+            border: 2px solid #f7d04e;
+        }
+
+        .secondary-button {
+            background-color: #fff;
+            border: 2px solid #9bcf3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="login">
+            <h2>Bem-vindo</h2>
+            <p>Faça login ou cadastre-se para continuar</p>
+            <input type="text" placeholder="Usuário" class="input">
+            <input type="password" placeholder="Senha" class="input">
+            <div class="buttons">
+                <!-- Botão para entrar -->
+                <a href="#" class="button primary-button">Entrar</a>
+                <!-- Botão para cadastro -->
+                <a href="{% url 'cadastro_colaborador' %}" class="button secondary-button">Cadastrar Usuário</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
