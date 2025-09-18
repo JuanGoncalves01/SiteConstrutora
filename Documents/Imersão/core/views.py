@@ -3,16 +3,24 @@ from django.contrib import messages
 from .models import Colaborador, Equipamento, Emprestimo, Itens_Emprestimo
 from django.db import transaction
 from django.utils import timezone
+from collections import namedtuple
 
 # View para a página inicial (dashboard)
 def home(request):
+    # Contagens do dashboard
     colaboradores_count = Colaborador.objects.count()
     epis_count = Equipamento.objects.count()
     emprestimos_ativos_count = Emprestimo.objects.filter(data_devolucao__isnull=True).count()
+
+    # Usuário simulado (para exibir na sidebar)
+    Usuario = namedtuple('Usuario', ['nome', 'foto'])
+    usuario = Usuario(nome="Juan Gonçalves", foto="img/user.png")  # caminho dentro de static
+
     return render(request, 'home.html', {
         'colaboradores_count': colaboradores_count,
         'epis_count': epis_count,
         'emprestimos_ativos_count': emprestimos_ativos_count,
+        'usuario': usuario,
     })
 
 # View para verificar o CPF do colaborador e redirecionar para o formulário de empréstimo
@@ -24,7 +32,9 @@ def verificar_colaborador(request):
             return redirect('emprestimo_form_com_cpf', colaborador_id=colaborador.id_colaborador)
         except Colaborador.DoesNotExist:
             messages.error(request, 'Colaborador não encontrado. Por favor, cadastre-o primeiro.')
-            return redirect('home')
+        except Colaborador.MultipleObjectsReturned:
+            messages.error(request, 'Erro: Múltiplos colaboradores encontrados com este CPF. Contate o administrador do sistema.')
+        return redirect('home')
     return redirect('home')
 
 # View para o formulário de cadastro de colaboradores
@@ -97,15 +107,15 @@ def confirmar_emprestimo(request):
                 epi = Equipamento.objects.get(id_equipamento=epi_id)
             except (Colaborador.DoesNotExist, Equipamento.DoesNotExist):
                 messages.error(request, 'Colaborador ou EPI não encontrados.')
-                return redirect('emprestimo_form')
+                return redirect('emprestimo_epi_form')
 
             if epi.situacao != 1:
                 messages.error(request, 'Este EPI não está disponível no momento.')
-                return redirect('emprestimo_form')
+                return redirect('emprestimo_epi_form')
             
             if data_devolucao < data_retirada:
-                 messages.error(request, 'A data de devolução não pode ser anterior à data de retirada.')
-                 return redirect('emprestimo_form')
+                messages.error(request, 'A data de devolução não pode ser anterior à data de retirada.')
+                return redirect('emprestimo_epi_form')
 
             novo_emprestimo = Emprestimo.objects.create(
                 colaborador=colaborador,
@@ -146,9 +156,157 @@ def devolver_emprestimo(request, emprestimo_id):
     messages.success(request, 'EPI devolvido com sucesso!')
     return redirect('listar_emprestimos')
 
+def relatorio_colaboradores(request):
+    search = request.GET.get('search')
+    emprestimos = Emprestimo.objects.all()
+
+    if search:
+        # Filtra os empréstimos pelo nome do colaborador
+        emprestimos = emprestimos.filter(colaborador__nome__icontains=search)
+
+    # Para cada empréstimo, pegamos os equipamentos relacionados
+    relatorio = []
+    for e in emprestimos:
+        itens = Itens_Emprestimo.objects.filter(emprestimo=e)
+        for item in itens:
+            relatorio.append({
+                'colaborador': e.colaborador.nome,
+                'equipamento': item.equipamento.nome,
+                'data_emprestimo': e.data,
+                'data_devolucao': e.data_devolucao,
+                'status': 'Em Uso' if item.equipamento.situacao == 2 else 'Disponível'
+            })
+
+    context = {
+        'relatorio': relatorio,
+        'search': search,
+    }
+    return render(request, 'relatorio_colaboradores.html', context)
+
+
+# View para o formulário de cadastro de colaboradores
+def cadastro_colaborador(request):
+    """
+    Função de view para o formulário e lógica de cadastro de colaboradores.
+    """
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        cpf = request.POST.get('cpf')
+        
+        if not nome or not cpf:
+            messages.error(request, 'Nome e CPF são obrigatórios.')
+        else:
+            Colaborador.objects.create(nome=nome, cpf=cpf)
+            messages.success(request, 'Colaborador cadastrado com sucesso!')
+            return redirect('cadastro_colaborador')
+    
+    return render(request, 'cadastro_colaborador.html')
+
+# View para o formulário de cadastro de EPI
+def cadastro_epi(request):
+    """
+    Função de view para o formulário e lógica de cadastro de EPI.
+    """
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        condicao = request.POST.get('condicao')
+        situacao = request.POST.get('situacao')
+        
+        if not nome or not condicao or not situacao:
+            messages.error(request, 'Todos os campos são obrigatórios.')
+        else:
+            Equipamento.objects.create(nome=nome, condicao=condicao, situacao=situacao)
+            messages.success(request, 'EPI cadastrado com sucesso!')
+            return redirect('cadastro_epi')
+    
+    return render(request, 'cadastro_epi.html')
+
+# View para listar todos os EPIs
+def listar_epis(request):
+    """
+    Função de view para listar todos os EPIs.
+    """
+    epis = Equipamento.objects.all().order_by('nome')
+    return render(request, 'listar_epis.html', {'epis': epis})
+
+# View para listar todos os empréstimos ativos
+def listar_emprestimos(request):
+    """
+    Função de view para listar todos os empréstimos ativos.
+    """
+    emprestimos = Emprestimo.objects.filter(data_devolucao__isnull=True).order_by('data')
+    return render(request, 'listar_emprestimos.html', {'emprestimos': emprestimos})
+
+# View para o formulário de empréstimo de EPI
+def emprestimo_epi_form(request, colaborador_id=None):
+    """
+    Função de view para o formulário de empréstimo de EPI.
+    Pode pré-selecionar o colaborador se um ID for fornecido.
+    """
+    colaboradores = Colaborador.objects.all()
+    epis_disponiveis = Equipamento.objects.filter(situacao=1) # 1 = Disponível
+    
+    colaborador_selecionado = None
+    if colaborador_id:
+        colaborador_selecionado = get_object_or_404(Colaborador, id_colaborador=colaborador_id)
+    
+    return render(request, 'emprestimo.html', {
+        'colaboradores': colaboradores, 
+        'epis': epis_disponiveis,
+        'colaborador_selecionado': colaborador_selecionado
+    })
+
+# View para processar o formulário de empréstimo
+def confirmar_emprestimo(request):
+    """
+    Função de view para processar a lógica de confirmação de um novo empréstimo.
+    """
+    if request.method == 'POST':
+        colaborador_id = request.POST.get('colaborador')
+        epi_id = request.POST.get('epi')
+        data_retirada = request.POST.get('data_retirada')
+        data_devolucao = request.POST.get('data_devolucao')
+
+        with transaction.atomic():
+            try:
+                colaborador = Colaborador.objects.get(id_colaborador=colaborador_id)
+                epi = Equipamento.objects.get(id_equipamento=epi_id)
+            except (Colaborador.DoesNotExist, Equipamento.DoesNotExist):
+                messages.error(request, 'Colaborador ou EPI não encontrados.')
+                return redirect('emprestimo_epi_form')
+
+            if epi.situacao != 1:
+                messages.error(request, 'Este EPI não está disponível no momento.')
+                return redirect('emprestimo_epi_form')
+            
+            if data_devolucao < data_retirada:
+                messages.error(request, 'A data de devolução não pode ser anterior à data de retirada.')
+                return redirect('emprestimo_epi_form')
+
+            novo_emprestimo = Emprestimo.objects.create(
+                colaborador=colaborador,
+                data=data_retirada,
+                data_devolucao=data_devolucao
+            )
+            
+            Itens_Emprestimo.objects.create(
+                equipamento=epi,
+                emprestimo=novo_emprestimo
+            )
+
+            epi.situacao = 2 # 2 = Em Uso
+            epi.save()
+
+            messages.success(request, 'Empréstimo realizado com sucesso.')
+            return redirect('home')
+    
+    return redirect('home')
 
 # View para processar a devolução de um EPI
 def devolver_emprestimo(request, emprestimo_id):
+    """
+    Função de view para processar a devolução de um EPI.
+    """
     emprestimo = get_object_or_404(Emprestimo, id_emprestimo=emprestimo_id)
     
     # Encontra o item emprestado para atualizar o EPI
@@ -166,7 +324,34 @@ def devolver_emprestimo(request, emprestimo_id):
 
     messages.success(request, 'EPI devolvido com sucesso!')
     return redirect('listar_emprestimos')
- 
-def listar_epis(request):
-    epis = Equipamento.objects.all().order_by('nome')
-    return render(request, 'listar_epis.html', {'epis': epis})
+
+# View para gerar o relatório de colaboradores
+def relatorio_colaboradores(request):
+    """
+    Função de view para gerar o relatório de empréstimos, com opção de busca.
+    """
+    search = request.GET.get('search')
+    emprestimos = Emprestimo.objects.all()
+
+    if search:
+        # Filtra os empréstimos pelo nome do colaborador
+        emprestimos = emprestimos.filter(colaborador__nome__icontains=search)
+
+    # Para cada empréstimo, pegamos os equipamentos relacionados
+    relatorio = []
+    for e in emprestimos:
+        itens = Itens_Emprestimo.objects.filter(emprestimo=e)
+        for item in itens:
+            relatorio.append({
+                'colaborador': e.colaborador.nome,
+                'equipamento': item.equipamento.nome,
+                'data_emprestimo': e.data,
+                'data_devolucao': e.data_devolucao,
+                'status': 'Em Uso' if item.equipamento.situacao == 2 else 'Disponível'
+            })
+
+    context = {
+        'relatorio': relatorio,
+        'search': search,
+    }
+    return render(request, 'relatorio_colaboradores.html', context)

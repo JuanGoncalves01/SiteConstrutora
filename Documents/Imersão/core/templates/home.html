@@ -2,136 +2,210 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Gestão de EPIs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard EPI</title>
     <style>
-        /* HTML e Body */
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        /* Estrutura da Página */
         body {
-            display: flex;
-            background-color: #f0f0f0;
+            margin: 0;
             font-family: Arial, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background-color: #f0f0f0;
         }
 
-        /* Sidebar - Menu Lateral */
+        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background-color: #333;
+            width: 220px;
+            background-color: #2d3748;
             color: white;
             padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
         }
 
-        .sidebar h2 {
-            margin-bottom: 30px;
+        .sidebar h1 {
             text-align: center;
-        }
-        
-        .sidebar ul {
-            list-style-type: none;
-            padding: 0;
-            width: 100%;
+            margin-bottom: 20px;
+            font-size: 20px;
         }
 
-        .sidebar li a {
+        .sidebar .user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar .user img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #34D399;
+        }
+
+        .sidebar nav a {
             display: block;
+            padding: 10px;
             color: white;
             text-decoration: none;
-            padding: 12px 15px;
+            margin-bottom: 5px;
             border-radius: 5px;
-            margin-bottom: 8px;
-            transition: background-color 0.3s;
         }
 
-        .sidebar li a:hover {
-            background-color: #575757;
+        .sidebar nav a:hover {
+            background-color: #4a5568;
         }
 
-        /* Conteúdo Principal */
-        .content {
-            flex-grow: 1;
+        /* Main content */
+        main {
+            flex: 1;
             padding: 20px;
         }
 
-        .dashboard-cards {
+        h1, h2 {
+            color: #2d3748;
+        }
+
+        /* Cards */
+        .cards {
             display: flex;
-            gap: 20px;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             flex: 1;
-            min-width: 250px;
+            min-width: 150px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-        
-        .card h3 {
-            margin-top: 0;
-            color: #333;
+
+        .card .number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
-        
-        .card form {
+
+        /* Formulário rápido */
+        .quick-loan {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .quick-loan form {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 10px;
+        }
+
+        .quick-loan input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .quick-loan button {
+            padding: 10px 20px;
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .quick-loan button:hover {
+            background-color: #2b6cb0;
+        }
+
+        .messages {
+            margin-top: 10px;
+        }
+
+        .messages li {
+            list-style: none;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .messages .success {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .messages .error {
+            background-color: #fed7d7;
+            color: #742a2a;
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Menu</h2>
-        <ul>
-            <li><a href="{% url 'home' %}">Dashboard</a></li>
-            <li><a href="{% url 'cadastro_colaborador' %}">Cadastrar Colaborador</a></li>
-            <li><a href="{% url 'cadastro_epi' %}">Cadastrar EPI</a></li>
-            <li><a href="{% url 'listar_epis' %}">Listar EPIs</a></li>
-            <li><a href="{% url 'listar_emprestimos' %}">Empréstimos Ativos</a></li>
-        </ul>
-    </div>
-    <div class="content">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h1>Gestão de EPIs</h1>
+
+        <div class="user">
+            <img src="https://placehold.co/50x50/34D399/FFFFFF/png?text=JS" alt="Usuário">
+            <span>Juan Gonçalves</span>
+        </div>
+
+        <nav>
+            <a href="{% url 'home' %}">Dashboard</a>
+            <a href="{% url 'cadastro_colaborador' %}">Cadastrar Colaborador</a>
+            <a href="{% url 'emprestimo_epi_form' %}">Realizar Empréstimo</a>
+            <a href="{% url 'listar_emprestimos' %}">Empréstimos Ativos</a>
+            <a href="{% url 'relatorio_colaboradores' %}">Relatórios</a>
+            <a href="{% url 'cadastro_epi' %}">Cadastrar EPI</a>
+            <a href="{% url 'listar_epis' %}">Listar EPIs</a>
+        </nav>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main>
         <h1>Dashboard</h1>
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        <div class="dashboard-cards">
+
+        <!-- Cards -->
+        <div class="cards">
             <div class="card">
-                <h3>Total de Colaboradores</h3>
-                <p>{{ colaboradores_count }}</p>
+                <div class="number">{{ colaboradores_count }}</div>
+                <div>Colaboradores</div>
             </div>
             <div class="card">
-                <h3>Total de EPIs</h3>
-                <p>{{ epis_count }}</p>
+                <div class="number">{{ epis_count }}</div>
+                <div>EPIs no Estoque</div>
             </div>
             <div class="card">
-                <h3>Empréstimos Ativos</h3>
-                <p>{{ emprestimos_ativos_count }}</p>
+                <div class="number">{{ emprestimos_ativos_count }}</div>
+                <div>Empréstimos Ativos</div>
             </div>
         </div>
-        <div class="card" style="margin-top: 20px;">
-            <h3>Empréstimo Rápido</h3>
-            <p>Digite o CPF do colaborador para iniciar o empréstimo.</p>
+
+        <!-- Empréstimo Rápido -->
+        <div class="quick-loan">
+            <h2>Empréstimo Rápido</h2>
             <form method="post" action="{% url 'verificar_colaborador' %}">
                 {% csrf_token %}
-                <label for="cpf">CPF:</label>
-                <input type="text" name="cpf" id="cpf" placeholder="Digite o CPF" required>
-                <button type="submit">Verificar</button>
+                <input type="text" name="cpf" placeholder="CPF do Colaborador" required>
+                <button type="submit">Iniciar</button>
             </form>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                            {{ message }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
-    </div>
+    </main>
+
 </body>
 </html>
